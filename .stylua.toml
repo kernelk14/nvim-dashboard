@@ -1,5 +1,5 @@
-indent_type = "spaces"
+indent_type = "Spaces"
 indent_width = 2
 column_width = 120
-quote_style = "auto"
-call_parentheses = "none"
+quote_style = "AutoPreferDouble"
+call_parentheses = "Always"
