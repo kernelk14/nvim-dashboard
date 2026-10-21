@@ -9,6 +9,7 @@ test:
 	$(NVIM) --clean --headless -l tests/session.lua
 	$(NVIM) --clean --headless -l tests/git.lua
 	$(NVIM) --clean --headless -l tests/autoopen.lua
+	$(NVIM) --clean --headless -l tests/conformance.lua
 
 preview:
 	$(NVIM) --clean --headless -l tests/preview.lua

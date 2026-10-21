@@ -1,6 +1,22 @@
+-- The colour themes of the dashboard.
+--
+-- The shared core is optional. When neocore is installed the dashboard and the
+-- other neo plugins share one palette implementation, when it is not the
+-- vendored copy below is used. `tests/conformance.lua` makes sure the two
+-- implementations agree.
+
 local util = require("neodash.util")
 
 local M = {}
+
+-- The shared core, when it happens to be installed.
+local has_core, core = pcall(require, "neocore.palette")
+
+--- True when the shared core is being used.
+---@return boolean
+function M.using_core()
+  return has_core
+end
 
 M.themes = {
   aurora = {
@@ -119,10 +135,19 @@ local function hl_bg(name)
   return nil
 end
 
-local function auto_palette()
+--- The palette derived from the active colorscheme.
+--- This is the vendored implementation, it matches the one in neocore.
+---@return table
+local function vendored_auto_palette()
   local bg = hl_bg("Normal") or "#0b1020"
   local fg = hl_fg("Normal") or "#c9d5f3"
-  local light = (vim.fn.str2nr(bg:sub(2, 2), 16) * 299 + vim.fn.str2nr(bg:sub(4, 4), 16) * 587 + vim.fn.str2nr(bg:sub(6, 6), 16) * 114) / 1000 > 128
+  local light = (
+    vim.fn.str2nr(bg:sub(2, 2), 16) * 299
+    + vim.fn.str2nr(bg:sub(4, 4), 16) * 587
+    + vim.fn.str2nr(bg:sub(6, 6), 16) * 114
+  )
+      / 1000
+    > 128
   local palette = {
     bg = bg,
     surface = util.blend(bg, fg, light and 0.04 or 0.06),
@@ -142,10 +167,14 @@ local function auto_palette()
   return palette
 end
 
-function M.palette(name, transparent)
+--- Resolve a palette with the vendored implementation.
+---@param name string?
+---@param transparent boolean?
+---@return table
+local function vendored_palette(name, transparent)
   local base
   if name == "auto" then
-    base = auto_palette()
+    base = vendored_auto_palette()
   else
     base = M.themes[name] or M.themes.aurora
     base = vim.deepcopy(base)
@@ -156,12 +185,47 @@ function M.palette(name, transparent)
   return base
 end
 
+-- The vendored implementation is exposed so the conformance test can compare
+-- it with the one in neocore.
+M.vendored_auto_palette = vendored_auto_palette
+M.vendored_palette = vendored_palette
+
+--- The palette derived from the active colorscheme.
+---@return table
+function M.auto_palette()
+  if has_core then
+    return core.auto_palette()
+  end
+  return vendored_auto_palette()
+end
+
+--- Resolve a palette by name.
+---@param name string?
+---@param transparent boolean?
+---@return table
+function M.palette(name, transparent)
+  if has_core then
+    return core.palette(name, transparent)
+  end
+  return vendored_palette(name, transparent)
+end
+
+--- The names of the available palettes.
+---@return string[]
 function M.names()
+  if has_core then
+    return core.names()
+  end
+
   local names = { "auto" }
+  local themes = {}
   for name in pairs(M.themes) do
+    themes[#themes + 1] = name
+  end
+  table.sort(themes)
+  for _, name in ipairs(themes) do
     names[#names + 1] = name
   end
-  table.sort(names)
   return names
 end
 
