@@ -147,7 +147,12 @@ function M.parse_hex(hex)
 end
 
 function M.fmt_hex(color)
-  return string.format("#%02x%02x%02x", math.floor(color[1] + 0.5), math.floor(color[2] + 0.5), math.floor(color[3] + 0.5))
+  return string.format(
+    "#%02x%02x%02x",
+    math.floor(color[1] + 0.5),
+    math.floor(color[2] + 0.5),
+    math.floor(color[3] + 0.5)
+  )
 end
 
 function M.blend(from, to, ratio)
@@ -161,16 +166,22 @@ function M.blend(from, to, ratio)
 end
 
 function M.mix(stops, ratio)
+  if #stops == 0 then
+    return "#000000"
+  end
   if #stops == 1 then
     return stops[1]
   end
   local segments = #stops - 1
   local pos = math.max(0, math.min(1, ratio)) * segments
-  local index = math.floor(pos) + 1
-  local frac = pos - (index - 1)
-  if index >= segments then
+  if pos <= 0 then
+    return stops[1]
+  end
+  if pos >= segments then
     return stops[#stops]
   end
+  local index = math.floor(pos) + 1
+  local frac = pos - (index - 1)
   return M.blend(stops[index], stops[index + 1], frac)
 end
 
