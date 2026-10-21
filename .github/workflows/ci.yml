@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
@@ -26,7 +26,7 @@ jobs:
 
       - name: Check out the workbench
         continue-on-error: true
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: kernelk14/nvim-workbench
           path: nvim-workbench
