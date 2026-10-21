@@ -52,12 +52,18 @@ for _, line in ipairs(doc.lines) do
   end
   text[#text + 1] = table.concat(parts)
 end
-check("cards are rendered", vim.iter(text):any(function(l)
-  return l:find("Actions", 1, true) ~= nil
-end))
-check("cards are aligned", vim.iter(text):any(function(l)
-  return l:find("│") ~= nil
-end))
+check(
+  "cards are rendered",
+  vim.iter(text):any(function(l)
+    return l:find("Actions", 1, true) ~= nil
+  end)
+)
+check(
+  "cards are aligned",
+  vim.iter(text):any(function(l)
+    return l:find("│") ~= nil
+  end)
+)
 
 local region_ok = false
 for _, line in ipairs(doc.lines) do

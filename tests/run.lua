@@ -35,15 +35,24 @@ check("filetype is neodash", vim.bo[buf].filetype == "neodash", vim.bo[buf].file
 check("buffer is not modifiable", vim.bo[buf].modifiable == false)
 check("buffer is not listed", vim.bo[buf].buflisted == false)
 check("rendered lines exist", #lines > 5, #lines)
-check("contains actions card", vim.iter(lines):any(function(l)
-  return l:find("Actions", 1, true) ~= nil
-end))
-check("contains recent card", vim.iter(lines):any(function(l)
-  return l:find("Recent", 1, true) ~= nil
-end))
-check("contains footer", vim.iter(lines):any(function(l)
-  return l:find("neovim", 1, true) ~= nil
-end))
+check(
+  "contains actions card",
+  vim.iter(lines):any(function(l)
+    return l:find("Actions", 1, true) ~= nil
+  end)
+)
+check(
+  "contains recent card",
+  vim.iter(lines):any(function(l)
+    return l:find("Recent", 1, true) ~= nil
+  end)
+)
+check(
+  "contains footer",
+  vim.iter(lines):any(function(l)
+    return l:find("neovim", 1, true) ~= nil
+  end)
+)
 check("no unknown option markers", not vim.iter(lines):any(function(l)
   return l:find("E%d+:") ~= nil
 end))
@@ -51,9 +60,12 @@ end))
 vim.wait(700)
 local clock_after = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 check("live clock keeps the buffer stable", #clock_after == #lines, #clock_after .. " vs " .. #lines)
-check("live clock keeps the footer", vim.iter(clock_after):any(function(l)
-  return l:find("neovim", 1, true) ~= nil
-end))
+check(
+  "live clock keeps the footer",
+  vim.iter(clock_after):any(function(l)
+    return l:find("neovim", 1, true) ~= nil
+  end)
+)
 
 local function has_map(lhs)
   for _, map in ipairs(vim.api.nvim_buf_get_keymap(buf, "n")) do
@@ -114,19 +126,44 @@ neodash.register_section("custom_demo", {
 neodash.config.get().sections.right = { "project", "recent", "custom_demo" }
 neodash.refresh()
 local with_custom = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-check("custom section renders", vim.iter(with_custom):any(function(l)
-  return l:find("custom line", 1, true) ~= nil
-end))
+check(
+  "custom section renders",
+  vim.iter(with_custom):any(function(l)
+    return l:find("custom line", 1, true) ~= nil
+  end)
+)
 neodash.config.get().sections.right = { "project", "recent" }
 
-vim.cmd("colorscheme habamax")
+-- The highlight groups a colorscheme sets, defined here so the test does not
+-- depend on the colorschemes that ship with Neovim, they differ between the
+-- versions.
+local function use_colors(fg, bg)
+  for _, name in ipairs({
+    "Normal",
+    "Comment",
+    "Function",
+    "Statement",
+    "Constant",
+    "Type",
+    "String",
+    "DiagnosticError",
+    "DiagnosticWarn",
+    "DiagnosticInfo",
+    "DiagnosticOk",
+    "DiagnosticHint",
+  }) do
+    vim.api.nvim_set_hl(0, name, { fg = fg, bg = bg })
+  end
+end
+
+use_colors("#c9d5f3", "#0b1020")
 neodash.set_theme("auto")
 neodash.refresh()
 local auto_hl = vim.api.nvim_get_hl(0, { name = "NeodashNormal" })
 check("auto theme derives a background", auto_hl.bg ~= nil, vim.inspect(auto_hl))
 check("auto theme keeps rendering", vim.api.nvim_buf_line_count(buf) > 0)
 
-vim.cmd("colorscheme morning")
+use_colors("#3f3a33", "#f6f3ec")
 neodash.set_theme("auto")
 local light_hl = vim.api.nvim_get_hl(0, { name = "NeodashNormal" })
 check("auto theme follows light colorschemes", light_hl.bg ~= nil, vim.inspect(light_hl))
@@ -134,7 +171,11 @@ neodash.set_theme("aurora")
 
 neodash.close()
 check("dashboard closes", not neodash.is_open())
-check("closing restores the window", vim.wo.number == number_before, tostring(vim.wo.number) .. " vs " .. tostring(number_before))
+check(
+  "closing restores the window",
+  vim.wo.number == number_before,
+  tostring(vim.wo.number) .. " vs " .. tostring(number_before)
+)
 check("closing restores winhighlight", vim.wo.winhighlight == highlight_before, vim.wo.winhighlight)
 
 print(string.format("\n%d checks, %d failures", checks, failures))

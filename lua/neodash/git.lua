@@ -27,7 +27,12 @@ end
 
 function M.get(cwd, on_update)
   local entry = cache[cwd]
-  if entry and entry.data and entry.at and (os.time() - entry.at) * 1000 < (require("neodash.config").get().git.ttl or 15000) then
+  if
+    entry
+    and entry.data
+    and entry.at
+    and (os.time() - entry.at) * 1000 < (require("neodash.config").get().git.ttl or 15000)
+  then
     return entry.data
   end
   if not entry then

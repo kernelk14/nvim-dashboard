@@ -313,9 +313,13 @@ local function start_clock()
   end
   local interval = opts.footer.update_interval or 30000
   state.timer = (vim.uv or vim.loop).new_timer()
-  state.timer:start(interval, interval, vim.schedule_wrap(function()
-    update_clock()
-  end))
+  state.timer:start(
+    interval,
+    interval,
+    vim.schedule_wrap(function()
+      update_clock()
+    end)
+  )
 end
 
 local function cleanup(buf)

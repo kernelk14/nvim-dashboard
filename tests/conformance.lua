@@ -53,9 +53,31 @@ local transparent = theme.vendored_palette("aurora", true)
 check("a transparent palette has no background", transparent.bg == "NONE", transparent.bg)
 check("an unknown theme falls back to aurora", theme.vendored_palette("nope").bg == theme.themes.aurora.bg)
 
-vim.cmd("colorscheme habamax")
+-- The highlight groups a colorscheme sets, defined here so the test does not
+-- depend on the colorschemes that ship with Neovim, they differ between the
+-- versions.
+local function use_colors(fg, bg)
+  for _, name in ipairs({
+    "Normal",
+    "Comment",
+    "Function",
+    "Statement",
+    "Constant",
+    "Type",
+    "String",
+    "DiagnosticError",
+    "DiagnosticWarn",
+    "DiagnosticInfo",
+    "DiagnosticOk",
+    "DiagnosticHint",
+  }) do
+    vim.api.nvim_set_hl(0, name, { fg = fg, bg = bg })
+  end
+end
+
+use_colors("#c9d5f3", "#0b1020")
 local dark = theme.vendored_auto_palette()
-vim.cmd("colorscheme morning")
+use_colors("#3f3a33", "#f6f3ec")
 local light = theme.vendored_auto_palette()
 check("the vendored palette follows the colorscheme", dark.bg ~= light.bg, dark.bg .. " vs " .. light.bg)
 
@@ -76,7 +98,7 @@ else
     )
   end
 
-  vim.cmd("colorscheme habamax")
+  use_colors("#c9d5f3", "#0b1020")
   check(
     "the auto palette matches the core",
     vim.deep_equal(theme.vendored_auto_palette(), core.auto_palette()),

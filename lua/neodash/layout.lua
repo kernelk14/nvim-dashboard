@@ -115,10 +115,12 @@ local function build_footer(cfg, width)
 
   local items = {}
   if footer.show_time then
-    items[#items + 1] = { { text = "󰥔 ", hl = "NeodashFooterAccent" }, { text = os.date(cfg.time_format), hl = "NeodashFooter" } }
+    items[#items + 1] =
+      { { text = "󰥔 ", hl = "NeodashFooterAccent" }, { text = os.date(cfg.time_format), hl = "NeodashFooter" } }
   end
   if footer.show_date then
-    items[#items + 1] = { { text = "󰃭 ", hl = "NeodashFooterAccent" }, { text = os.date(cfg.date_format), hl = "NeodashFooter" } }
+    items[#items + 1] =
+      { { text = "󰃭 ", hl = "NeodashFooterAccent" }, { text = os.date(cfg.date_format), hl = "NeodashFooter" } }
   end
   if footer.show_version then
     local version = vim.version()

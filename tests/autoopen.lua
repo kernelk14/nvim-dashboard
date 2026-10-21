@@ -41,7 +41,11 @@ local output = run({ setup })
 check("dashboard opens on VimEnter", output:find("NEODASH_PROBE filetype=neodash open=true", 1, true) ~= nil, output)
 
 local output_off = run({ "lua require('neodash').setup({auto_open = false})" })
-check("auto_open=false keeps the buffer clean", output_off:find("NEODASH_PROBE filetype= open=false", 1, true) ~= nil, output_off)
+check(
+  "auto_open=false keeps the buffer clean",
+  output_off:find("NEODASH_PROBE filetype= open=false", 1, true) ~= nil,
+  output_off
+)
 
 print(failures == 0 and "\nautoopen ok" or ("\n" .. failures .. " autoopen failures"))
 if failures > 0 then
