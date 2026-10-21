@@ -1,0 +1,207 @@
+*neodash.txt*  A responsive start screen for Neovim
+
+==============================================================================
+CONTENTS                                                        *neodash*
+
+  1. Introduction ........................... |neodash-introduction|
+  2. Setup ................................. |neodash-setup|
+  3. Configuration .......................... |neodash-config|
+  4. Menu items ............................ |neodash-menu|
+  5. Sections ................................ |neodash-sections|
+  6. Themes ................................. |neodash-themes|
+  7. Commands ............................... |neodash-commands|
+  8. Keymaps ................................. |neodash-keymaps|
+  9. API ................................... |neodash-api|
+ 10. Health ................................. |neodash-health|
+
+==============================================================================
+1. INTRODUCTION                                             *neodash-introduction*
+
+neodash renders a start screen with a gradient wordmark, a card based layout,
+live git information and recent files. It has no dependencies and never blocks
+on external commands.
+
+Requirements: Neovim 0.10 or newer. A Nerd Font is recommended for the icons.
+
+==============================================================================
+2. SETUP                                                         *neodash-setup*
+
+>lua
+    require("neodash").setup()
+<
+Calling setup is optional but recommended: without it the dashboard will not
+open automatically.
+
+==============================================================================
+3. CONFIGURATION                                               *neodash-config*
+
+Defaults: >lua
+    require("neodash").setup({
+      auto_open = true,
+      theme = "aurora",
+      transparent = false,
+      max_width = 100,
+      padding = 2,
+      gap = 3,
+      two_column = true,
+      min_two_column_width = 48,
+      max_single_width = 50,
+      date_format = "%a, %b %d",
+      time_format = "%H:%M",
+      header = {
+        style = "auto",
+        tagline = "make something wonderful",
+        art = nil,
+        gradient = true,
+      },
+      footer = {
+        enabled = true,
+        show_date = true,
+        show_time = true,
+        show_version = true,
+        show_hint = true,
+        live = true,
+        update_interval = 30000,
+      },
+      keys = {
+        close = "q",
+        help = "?",
+        refresh = "R",
+      },
+      menu = { title = "Actions", icon = "󰘳", items = { ... } },
+      recent = {
+        title = "Recent",
+        icon = "󰋚",
+        limit = 5,
+        show_time = true,
+        show_parent = true,
+        exclude = {},
+      },
+      project = { title = "Project", icon = "󰉋", show_path = true },
+      sections = {
+        left = { "menu" },
+        right = { "project", "recent" },
+        bottom = {},
+        custom = {},
+      },
+      git = { enabled = true, ttl = 15000 },
+      picker = "auto",
+      session = { enabled = false, autosave = false },
+      on_open = nil,
+    })
+<
+`auto_open`   Open the dashboard on |VimEnter| when no file was given. May be
+              a function returning a boolean.
+`theme`       See |neodash-themes|.
+`transparent` Render the dashboard on top of the terminal background.
+`max_width`   Maximum width of the dashboard content.
+`padding`     Horizontal padding in columns.
+`gap`         Gap between the two layout columns.
+`two_column`  Use the two column layout when there is enough room.
+`header`      `style` is one of "auto", "art", "compact", "text" or "none".
+              `art` replaces the built in wordmark with your own lines.
+`menu`        See |neodash-menu|.
+`recent`      `limit` is the number of entries, `exclude` is a list of plain
+              substrings that are skipped.
+`sections`    `left` and `right` list section names, `bottom` is rendered
+              below both columns, `custom` holds inline sections.
+`picker`      "auto" detects snacks.nvim, telescope.nvim, fzf-lua or
+              mini.pick. Set a name to force one of them.
+`session`     `autosave` writes a session on |VimLeavePre|.
+
+==============================================================================
+4. MENU ITEMS                                                     *neodash-menu*
+
+Each item accepts: >lua
+    {
+      icon = "󰈞",
+      label = "Find file",
+      key = "f",
+      action = "find_files",
+      enabled = function() return true end,
+    }
+<
+`action` is either a function or the name of a built in action:
+`find_files`, `recent_files`, `new_file`, `edit_config`, `lazy`,
+`explore_cwd`, `quit`, `help`, `save_session`, `restore_session`.
+
+Register your own action: >lua
+    require("neodash.actions").register("my_action", function() end)
+<
+==============================================================================
+5. SECTIONS                                                   *neodash-sections*
+
+Built in sections: `menu`, `project`, `recent`.
+
+Register a custom section: >lua
+    require("neodash").register_section("todo", {
+      title = "Todo",
+      icon = "󰄡",
+      render = function(ctx)
+        return {
+          title = "Todo",
+          icon = "󰄡",
+          lines = { "ship it" },
+        }
+      end,
+    })
+<
+The context table contains:
+`cfg`     the resolved configuration
+`inner`   usable width of the card in columns
+`limit`   the current recent file limit
+
+A line is either a string or a list of segments: >lua
+    { { text = "hello", hl = "NeodashText" } }
+<
+Available highlight groups: `NeodashText`, `NeodashTitle`, `NeodashMuted`,
+`NeodashDim`, `NeodashAccent`, `NeodashAccent2`, `NeodashGreen`,
+`NeodashYellow`, `NeodashRed`, `NeodashCyan`, `NeodashIcon`, `NeodashCard`,
+`NeodashCardAlt`, `NeodashBorder`, `NeodashCardTitle`, `NeodashKey`.
+
+==============================================================================
+6. THEMES                                                     *neodash-themes*
+
+Themes: `aurora`, `mocha`, `nord`, `ember`, `mono`, `daylight` and `auto`.
+
+`auto` derives a palette from the active colorscheme and re-applies itself
+when |:colorscheme| runs.
+
+==============================================================================
+7. COMMANDS                                                   *neodash-commands*
+
+:Neodash            Open the dashboard.
+:NeodashClose       Close the dashboard.
+:NeodashRefresh     Re-render the dashboard.
+:NeodashTheme       Switch theme, completes theme names.
+
+==============================================================================
+8. KEYMAPS                                                   *neodash-keymaps*
+
+The menu shortcuts are configurable through `menu.items`. Additionally: >
+
+    <CR>       Run the action under the cursor
+    j / k      Move between clickable actions
+    R          Refresh the dashboard
+    ?          Open this help
+    <Esc>      Close the dashboard
+
+==============================================================================
+9. API                                                           *neodash-api*
+
+require("neodash").setup({opts})          Configure the plugin.
+require("neodash").open()                  Open the dashboard.
+require("neodash").close()                 Close the dashboard.
+require("neodash").toggle()                Toggle the dashboard.
+require("neodash").refresh()               Re-render the dashboard.
+require("neodash").is_open()               Dashboard is open?
+require("neodash").set_theme({name})       Switch theme at runtime.
+require("neodash").register_section({n}, {s})
+require("neodash").session_path()          Path of the saved session.
+
+==============================================================================
+10. HEALTH                                                     *neodash-health*
+
+Run |:checkhealth| neodash to verify the installation.
+
+vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,0 +1,4 @@
+*.log
+.luarc.json
+.selene-cache
+tags
